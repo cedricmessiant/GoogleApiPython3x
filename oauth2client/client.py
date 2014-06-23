@@ -190,6 +190,10 @@ class Credentials(object):
     # Add in information we will need later to reconsistitue this instance.
     d['_class'] = t.__name__
     d['_module'] = t.__module__
+    for k, v in d.items():
+      if type(v) is bytes:
+        d[k] = v.decode('utf-8')
+
     return simplejson.dumps(d)
 
   def to_json(self):
@@ -907,7 +911,7 @@ if HAS_CRYPTO:
         service_account_name,
         private_key,
         scope,
-        private_key_password='notasecret',
+        private_key_password=b'notasecret',
         user_agent=None,
         token_uri=GOOGLE_TOKEN_URI,
         revoke_uri=GOOGLE_REVOKE_URI,
@@ -951,7 +955,7 @@ if HAS_CRYPTO:
           data['service_account_name'],
           base64.b64decode(data['private_key']),
           data['scope'],
-          private_key_password=data['private_key_password'],
+          private_key_password=data['private_key_password'].encode('utf-8'),
           user_agent=data['user_agent'],
           token_uri=data['token_uri'],
           **data['kwargs']

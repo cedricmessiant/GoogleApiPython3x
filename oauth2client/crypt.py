@@ -112,7 +112,7 @@ try:
       return crypto.sign(self._key, message, 'sha256')
 
     @staticmethod
-    def from_string(key, password='notasecret'):
+    def from_string(key, password=b'notasecret'):
       """Construct a Signer instance from a string.
 
       Args:
@@ -125,7 +125,7 @@ try:
       Raises:
         OpenSSL.crypto.Error if the key can't be parsed.
       """
-      if key.startswith('-----BEGIN '):
+      if key.startswith(b'-----BEGIN '):
         pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, key)
       else:
         pkey = crypto.load_pkcs12(key, password).get_privatekey()
@@ -217,7 +217,7 @@ try:
       return PKCS1_v1_5.new(self._key).sign(SHA256.new(message))
 
     @staticmethod
-    def from_string(key, password='notasecret'):
+    def from_string(key, password=b'notasecret'):
       """Construct a Signer instance from a string.
 
       Args:
@@ -230,7 +230,7 @@ try:
       Raises:
         NotImplementedError if they key isn't in PEM format.
       """
-      if key.startswith('-----BEGIN '):
+      if key.startswith(b'-----BEGIN '):
         pkey = RSA.importKey(key)
       else:
         raise NotImplementedError(
@@ -257,7 +257,7 @@ else:
 
 
 def _urlsafe_b64encode(raw_bytes):
-  return base64.urlsafe_b64encode(raw_bytes).rstrip('=')
+  return base64.urlsafe_b64encode(raw_bytes).rstrip(b'=')
 
 
 def _urlsafe_b64decode(b64string):
@@ -286,17 +286,17 @@ def make_signed_jwt(signer, payload):
   header = {'typ': 'JWT', 'alg': 'RS256'}
 
   segments = [
-          _urlsafe_b64encode(_json_encode(header)),
-          _urlsafe_b64encode(_json_encode(payload)),
+          _urlsafe_b64encode(_json_encode(header).encode('utf-8')),
+          _urlsafe_b64encode(_json_encode(payload).encode('utf-8')),
   ]
-  signing_input = '.'.join(segments)
+  signing_input = b'.'.join(segments)
 
   signature = signer.sign(signing_input)
   segments.append(_urlsafe_b64encode(signature))
 
   logger.debug(str(segments))
 
-  return '.'.join(segments)
+  return b'.'.join(segments)
 
 
 def verify_signed_jwt_with_certs(jwt, certs, audience):
